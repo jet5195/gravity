@@ -34,7 +34,7 @@ public class Boleyn {
             System.out.println("______");
             System.out.println("Iterate:  I (Default)");
             System.out.println("Zoom:     ZI: Zoom In; ZO: Zoom Out");
-            System.out.println("Pan:      PU: Pan Up; PD: Pan Down; PL: Pan Left; PR: Pan Right");
+            System.out.println("Pan:      PU: Pan Up; PD: Pan Down; PL: Pan Left; PR: Pan Right; H: Home");
             System.out.println("Time:     TD: Double Time increment; TH: Half Time increment");
             System.out.println("Change:   C");
             System.out.println("Show:     S");
@@ -100,7 +100,13 @@ public class Boleyn {
                         System.out.println("Top: " + image.yTop + " , Bottom: " + image.yBottom);
                         System.out.println("Left: " + image.xLeft + " , Right: " + image.xRight);
                         break;
-                    //time ddouble    
+                    //time ddouble 
+                    case "H":
+                        //return pan to home
+                        image.xLeft= image.xRange/-2;
+                        image.xRight = image.xRange/2;
+                        image.yTop= image.yRange/2;
+                        image.yBottom = image.yRange/-2;
                     case "TD":                        
                         timeStep *= 2;
                         break;
@@ -130,6 +136,16 @@ public class Boleyn {
                 }
             }
             //updateImage();
+        }
+    }
+    
+    static void pan(String direction, KeyboardInputClass input){
+        input.getDouble(true, 1, .00000001, Double.POSITIVE_INFINITY, direction);
+        switch(direction){
+            case "PU":
+            case "PD":
+            case "PL":
+            case "PR":
         }
     }
 
@@ -190,10 +206,12 @@ public class Boleyn {
     }
     
     static void show() {
+        
         System.out.println("\tX\tY\tVX\tVY\tAX\tAY");
         for (int i = 0; i < entities.size(); i++) {
             Entity a = entities.get(i);
-            System.out.println(i+".\t"+a.x+"\t"+a.y+"\t"+a.vx+"\t"+a.vy+"\t"+a.ax+"\t"+a.ay);     
+            //System.out.println(i+".\t"+a.x+"\t"+a.y+"\t"+a.vx+"\t"+a.vy+"\t"+a.ax+"\t"+a.ay);    
+            System.out.printf("%d.\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",i, a.x, a.y, a.vx, a.vy, a.ax, a.ay);
         }
     }
     //****************************************************************************
@@ -266,10 +284,10 @@ public class Boleyn {
     }
     
      static void computeNewPosition(Entity entity){
-         System.out.println("nx = x+v*t+1/2a*t^2");
-         System.out.println(entity.x+"\t"+timeStep+"\t"+entity.nax);
-        entity.nx=entity.x+entity.nvx*timeStep+.5*entity.nax*timeStep*timeStep;
-        entity.ny=entity.y+entity.nvy*timeStep+.5*entity.nay*timeStep*timeStep;   
+//         System.out.println("nx = x+v*t+1/2a*t^2");
+//         System.out.println(entity.x+"\t"+timeStep+"\t"+entity.nax);
+        entity.nx=entity.x+entity.nvx*timeStep+(.5*entity.nax*timeStep*timeStep);
+        entity.ny=entity.y+entity.nvy*timeStep+(.5*entity.nay*timeStep*timeStep);   
     }
      
      static void computeNewVelocity(Entity entity){
@@ -284,7 +302,8 @@ public class Boleyn {
          double vy;
          double r;
          System.out.println("Presets: Default is 1");
-         System.out.print("1. Quadrants");
+         System.out.println("1. Quadrants");
+         System.out.println("2. Planets?");
          int preset = input.getInteger(true, 1, 1, 2, "");
          switch(preset){
              case 1:
@@ -295,6 +314,7 @@ public class Boleyn {
                  entities.add(new Entity(-1*p, -1*p, 0, 0, p/4));
                  break;
              case 2:
+                 //entities.add(new Entity(x, y, vx, vy, r))
              case 3:
          }
      }
