@@ -9,12 +9,14 @@ public class Boleyn {
     static ArrayList<Entity> entities;
     static double timeStep = 1;
     static long graphicsDelay;
+    static boolean fill;//false = no fill, true = fill
     
     public static void main(String[] args) {
         KeyboardInputClass input = new KeyboardInputClass();
         size = 800;
         while (true) {
             graphicsDelay = 0;
+            fill = false;
             entities = new ArrayList<>();
             size = input.getInteger(true, 800, 0, 5000, "Enter the size for the window (Default is 800):");
             createImage();
@@ -198,7 +200,8 @@ public class Boleyn {
             System.out.println("Press 2 to select a situation");
             System.out.println("Press 3 to specify your own coordinates");
             System.out.println("Press 4 to specify the time delay");
-            menu = input.getInteger(true, menu, 0, 4, "Default is: " + menu);
+            System.out.println("Press 5 for extras");
+            menu = input.getInteger(true, menu, 0, 5, "Default is: " + menu);
             switch (menu) {
                 case 0:
                     if (entities.isEmpty()) {
@@ -212,7 +215,7 @@ public class Boleyn {
                     while (numRandEntities > 0) {
                         x =  ((Math.random() * image.xRange) + image.xLeft);
                         y =  ((Math.random() * image.yRange) + image.yBottom);
-                        System.out.println("X is: " + x + ", Y is: " + y);
+                        //System.out.println("X is: " + x + ", Y is: " + y);
                         vx =  (Math.random() * size) - (size / 2);
                         vy =  (Math.random() * size) - (size / 2);
                         r =  (Math.random() * size) / 10;//max 
@@ -235,6 +238,8 @@ public class Boleyn {
                     graphicsDelay = (long)(input.getDouble(true, graphicsDelay, 0, 2147483647,
                             "Enter the graphics dealy in milliseconds (Default is 0):"));
                     break;
+                case 5:
+                    extras(input);
             }
             updateImage(0);
         }
@@ -289,25 +294,28 @@ public class Boleyn {
         entity1.ay = entity1.nay;
         entity1.vx = entity1.nvx;
         entity1.vy = entity1.nvy;
+        //System.out.println("Set new as old");
+        //System.out.println("entity.vy:" + entity1.vy);
         entity1.nx=0;
         entity1.ny=0;
         entity1.nvx=0;
         entity1.nvy=0;
         entity1.nax=0;
         entity1.nay=0;
+        //System.out.println("entity.vy:" + entity1.vy);
         
     }
     
     
     static double[] computeNewAcceleration(Entity eMove, Entity eStatic, int g){//entity eMove being acted on by entity eStatic
         double magnitude = g * eStatic.getMass()/distanceBetweenPoints(eMove, eStatic); //distance
-        System.out.println("magnitude: " + magnitude);
+        //System.out.println("magnitude: " + magnitude);
         //double slope = (eStatic.y-eMove.y)/(eStatic.x-eMove.x);// probs useless
         Angles angleObject = new Angles();
         double angle = angleObject.computeVectorAngle(eMove.x,eMove.y,eStatic.x,eStatic.y);//I think this is backwards
         //then multiply the magnitude of the acceleration times the cosine and
         //sine of that angle to get the acceleration components in the x and y directions, respectively
-        System.out.println("angle: "+ angle);
+        //System.out.println("angle: "+ angle);
         double xAccel = Math.cos(angle)*magnitude;
         double yAccel = Math.sin(angle)*magnitude;
         double[] accel = {xAccel, yAccel};
@@ -326,13 +334,15 @@ public class Boleyn {
     }
     
      static void computeNewPosition(Entity entity){
-        entity.nx=entity.x+entity.nvx*timeStep+(.5*entity.nax*timeStep*timeStep);
-        entity.ny=entity.y+entity.nvy*timeStep+(.5*entity.nay*timeStep*timeStep);   
+        entity.nx=entity.x+(entity.vx*timeStep)+(.5*entity.nax*timeStep*timeStep);
+        entity.ny=entity.y+(entity.vy*timeStep)+(.5*entity.nay*timeStep*timeStep);   
     }
      
      static void computeNewVelocity(Entity entity){
-         entity.nvx = entity.vx+entity.ax*timeStep;
-         entity.nvy = entity.vy+entity.ay*timeStep;
+         entity.nvx = entity.vx+(entity.nax*timeStep);
+         entity.nvy = entity.vy+(entity.nay*timeStep);
+         //System.out.println("Compute new velocity");
+         //System.out.println("Entity velocity is: " + entity.nvx + " & " + entity.nvy);
      }
      
      static void presets(KeyboardInputClass input){
@@ -358,6 +368,21 @@ public class Boleyn {
              case 3:
          }
      }
+     
+     static void extras(KeyboardInputClass input){
+         System.out.println("Extras: Default is 1");
+         if(!fill){
+             System.out.println("1. Fill the entities");
+         } else{
+             System.out.println("1. Don't fill the entities");
+         }
+         input.getInteger(true, 1, 1, 1, "");
+         if(!fill){
+             fill=true;
+         } else{
+             fill=false;
+         }
+     }
     
     static void updateImage(int isIterate) {
         image.clearImage(0, 0, 0);
@@ -376,7 +401,7 @@ public class Boleyn {
 
     //****************************************************************************
     static void drawEntity(Entity entity) {
-        image.insertCircle(entity.x, entity.y, entity.getRadius(), entity.color[0], entity.color[1], entity.color[2], false);
+        image.insertCircle(entity.x, entity.y, entity.getRadius(), entity.color[0], entity.color[1], entity.color[2], fill);
     }
 }
 //****************************************************************************

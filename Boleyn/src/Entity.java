@@ -30,7 +30,7 @@ public class Entity {
         this.vy = vy;
         this.setRadiusAndMass(r);
         double ratio = this.getMass()/(size*size);
-        System.out.println(ratio);
+        //System.out.println(ratio);
         if(ratio<=.00001){
             color = colors[0];
         }
