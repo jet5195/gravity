@@ -398,6 +398,63 @@ public class Boleyn {
         }
         image.setPixelValues();
     }
+    //must be called B4 setting all old variables as the curretn new variables
+    static void computeCollisions(Entity entity1, Entity entity2){
+        double variance = 5;//amount of... for a slope to be the same
+        double slope1 = computeSlope(entity1);
+        double slope2 = computeSlope(entity2);
+        if(Math.abs(slope1-slope2)>variance) {
+            case1(entity1, entity2, slope1, slope2);//trajectories intersect
+        } else{
+            case2(entity1, entity2, slope1, slope2);
+        }
+    }
+    
+    static void case1(Entity entity1, Entity entity2, double slope1, double slope2){//different slopes
+        //two entities collide if both of them are completely 
+        //contained at the same time within a circular area of 
+        //radius r1+r2 centered at the intersection point 
+        //(where r1 and r2 are the radii of the two bodies).
+        double radius = entity1.getRadius()+entity2.getRadius();
+        double area = pi*radius*radius;
+        double x = ((slope1*entity1.x)-(slope2*entity2.x)+entity2.y-entity1.y)/(slope1-slope2);
+        double y = slope1*(x-entity1.x)+entity1.y;
+        //pythag theorem
+        double a = y-entity1.y;
+        double b = x-entity1.x;
+        double d1 = Math.sqrt((a*a)+(b*b));
+        a = y-entity2.y;
+        b = x-entity2.x;
+        double d2 = Math.sqrt((a*a)+(b*b));
+        
+        double d1in;
+        double d1out;
+        double d2in;
+        double d2out;
+        
+        double time;
+        
+    }
+    static void case2(Entity entity1, Entity entity2, double slope1, double slope2){
+        
+    }
+    
+    static void computeCollisionTIme(Entity entity1){
+        
+    }
+    
+    static double computeSlope(Entity entity1){
+        return (entity1.ny-entity1.y)/(entity1.nx-entity1.x);
+    }
+    
+    static void collide(int entity1, int entity2){
+        //m3= m1+m2
+        //calculate r via m3
+        //vx3=(m1*vx1+m2*vx2)/m3 & same for y
+        
+        Entity combined = new Entity(pi, pi, pi, pi, pi, size);
+        entities.add(0, combined);
+    }
 
     //****************************************************************************
     static void drawEntity(Entity entity) {
