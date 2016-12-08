@@ -12,7 +12,6 @@ public class Boleyn {
     static long graphicsDelay;
     static boolean fill;//false = no fill, true = fill
     static ArrayList<Collision> collisions = new ArrayList();
-    
 
     public static void main(String[] args) {
         KeyboardInputClass input = new KeyboardInputClass();
@@ -219,8 +218,8 @@ public class Boleyn {
                         x = ((Math.random() * image.xRange) + image.xLeft);
                         y = ((Math.random() * image.yRange) + image.yBottom);
                         //System.out.println("X is: " + x + ", Y is: " + y);
-                        vx = ((Math.random() * size) - (size / 2))/10;
-                        vy = ((Math.random() * size) - (size / 2)/10);
+                        vx = ((Math.random() * size) - (size / 2)) / 10;
+                        vy = ((Math.random() * size) - (size / 2) / 10);
                         r = (Math.random() * size) / 10;//max 
                         entities.add(new Entity(x, y, vx, vy, r, size));
                         numRandEntities--;
@@ -597,11 +596,16 @@ public class Boleyn {
             return true;
         }
         //if there isn't already a collision, loop through until you find one or get out of the timestep
-        for (double ts = .1; ts <= 1; ts += .1) {
+        for (double ts = .1; ts < timeStep; ts += .1) {
             entity1x = entity1.x + (entity1.vx * ts) + (.5 * entity1.nax * ts * ts);
             entity1y = entity1.y + (entity1.vy * ts) + (.5 * entity1.nay * ts * ts);
             entity2x = entity2.x + (entity2.vx * ts) + (.5 * entity2.nax * ts * ts);
             entity2y = entity2.y + (entity2.vy * ts) + (.5 * entity2.nay * ts * ts);
+            
+//            if(ts>=.91){
+//                System.out.println("Entity1x: " + entity1x);
+//                System.out.println("Entity1y: " + entity1y);
+//            }
 
             //a = entity1y - entity2y;
             //b = entity1x - entity2x;
@@ -695,49 +699,75 @@ public class Boleyn {
             }
             System.out.println("");
         }
-
-        iValue = entitiesColliding.get(0).get(0);//now this will be used to refer
+        System.out.println(".....");
+        //iValue = entitiesColliding.get(0).get(0);//now this will be used to refer
         //to each entity which collides
         //ie 0|1,2,3
         //it's 0
-        System.out.println("iValue b4 loop: " + iValue);
+        //System.out.println("iValue b4 loop: " + iValue);
         //ArrayList<Integer> iCollisions = entitiesColliding.get(0);
-       // iCollisions.remove(0);//this contains everyting iValue hits... without itself
+        // iCollisions.remove(0);//this contains everyting iValue hits... without itself
 
         for (int i = 0; i < entitiesColliding.size(); i++) {
-            if(entitiesColliding.get(0).get(0)!=0){
-                System.out.println("something weird happened. i is: " + i + "0Value is: " + entitiesColliding.get(0).get(0));
-            }
+//            if (entitiesColliding.get(0).get(0) != 0) {
+//                System.out.println("something weird happened. i is: " + i + "0Value is: " + entitiesColliding.get(0).get(0));
+//            }
             iValue = entitiesColliding.get(i).get(0);
             //iCollisions = entitiesColliding.get(i);
             for (int j = 0; j < entitiesColliding.get(i).size(); j++) {//for all newCollisions of i
+                int jValue = entitiesColliding.get(i).get(j);
                 for (int k = i + 1; k < entitiesColliding.size(); k++) {//check what they collide to
                     int kValue = entitiesColliding.get(k).get(0);
-                    if (kValue == entitiesColliding.get(i).get(j)) {//if ivalue collides with 
-                        //if kValue (k|2, 3, 5) is in iCollisions (i| k, 5, 7)
-                        for (int l = entitiesColliding.get(k).size() - 1; l > 0; l--) {//start at 1 to disregard k itself
+//                    if (kValue == jValue) {//if ivalue collides with 
+//                        //if kValue (k|2, 3, 5) is in iCollisions (i| k, 5, 7)
+//                        for (int l = entitiesColliding.get(k).size() - 1; l > 0; l--) {//start at 1 to disregard k itself
+//                            int lValue = entitiesColliding.get(k).get(l);
+//                            if (!entitiesColliding.get(i).contains(lValue)) {
+//                                //iCollisions.add(lValue);
+//                                entitiesColliding.get(i).add(lValue);
+//                                System.out.println("Added " + iValue + "| " + lValue);
+//                                entitiesColliding.get(k).remove(l);
+//                                System.out.println("Removed " + kValue + "| " + lValue);
+//                            } else {//already contained
+//                                entitiesColliding.get(k).remove(l);
+//                                System.out.println("Removed " + kValue + "| " + lValue);
+//                            }
+//                        }
+//                        if (entitiesColliding.get(k).size() == 1) {
+//                            entitiesColliding.remove(k);
+//                        }
+//                        //maybe have to delete entitesColliding.get(k) if it is empty????
+//                    } else {
+                        for (int l = 0; l < entitiesColliding.get(k).size(); l++) {
                             int lValue = entitiesColliding.get(k).get(l);
-                            if (!entitiesColliding.get(i).contains(lValue)) {
-                                //iCollisions.add(lValue);
-                                entitiesColliding.get(i).add(lValue);
-                                System.out.println("Added " + iValue + "| " + lValue);
-                                entitiesColliding.get(k).remove(l);
-                                System.out.println("Removed " + kValue + "| " + lValue);
-                            } else{//already contained
-                                entitiesColliding.get(k).remove(l);
-                                System.out.println("Removed " + kValue + "| " + lValue);
+                            if (jValue == lValue) {
+                                for (int m = entitiesColliding.get(k).size() - 1; m > 0; m--) {
+                                    int mValue = entitiesColliding.get(k).get(m);
+                                    if (!entitiesColliding.get(i).contains(mValue)) {
+                                        //iCollisions.add(lValue);
+                                        entitiesColliding.get(i).add(mValue);
+                                        System.out.println("Added " + iValue + "| " + mValue);
+                                        entitiesColliding.get(k).remove(m);
+                                        System.out.println("Removed " + kValue + "| " + mValue);
+                                    } else {//already contained
+                                        entitiesColliding.get(k).remove(m);
+                                        System.out.println("Removed " + kValue + "| " + mValue);
+                                    }
+
+                                //}
                             }
+
                         }
-                        if(entitiesColliding.get(k).size()==1){
-                        entitiesColliding.remove(k);
-                        }
-                        //maybe have to delete entitesColliding.get(k) if it is empty????
                     }
                 }
                 //go through each arrayList and see if 0 collides with 1 and 1 collides with 2
                 // then 0 collides with 1 & 2
                 //add all newCollisions from entitiesColliding.get(?).get(0)iCollisions.get(j)
 
+            }
+            if(entitiesColliding.get(i).size()==1){
+                entitiesColliding.remove(i);
+                i--;
             }
 
         }
@@ -753,46 +783,50 @@ public class Boleyn {
         //TIME TO ACTUALLY MAKE THEM DO THINGS WHEN THEY COLLIDE
         for (int i = 0; i < entitiesColliding.size(); i++) {
             iValue = entitiesColliding.get(i).get(0);
+            double x = 0;
+            double y = 0;
             double mass = 0;
             double radius = 0;
             double vx = 0;
             double vy = 0;
+           
             for (int j = 0; j < entitiesColliding.get(i).size(); j++) {
                 int jValue = entitiesColliding.get(i).get(j);
                 Entity jEntity = entities.get(jValue);
-                mass+= jEntity.getMass();
-                vx+= jEntity.getMass() * jEntity.vx;
-                vy+= jEntity.getMass() * jEntity.vy;
+                mass += jEntity.getMass();
+                vx += jEntity.getMass() * jEntity.vx;
+                vy += jEntity.getMass() * jEntity.vy;
+                x += jEntity.x;
+                y += jEntity.y;
             }
-            vx/=mass;
-            vy/=mass;
-            newCollisions.add(new NewCollisions(entitiesColliding.get(i),0,0,vx,vy,mass));
+            x/=entitiesColliding.get(i).size();
+            y/=entitiesColliding.get(i).size();
+            vx /= mass;
+            vy /= mass;
+            newCollisions.add(new NewCollisions(entitiesColliding.get(i), x, y, vx, vy, mass));
         }
-        
-        System.out.println("Index for newCollision[0]" + newCollisions.get(0).indexes.toString());
-        
-        
-        
+
+        //System.out.println("Index for newCollision[0]" + newCollisions.get(0).indexes.toString());
+
         ArrayList<Integer> deadIndexes = new ArrayList<>();
         ArrayList<Entity> babyEntities = new ArrayList<>();
-        
-        
+
         /////////////////actually collide
-        System.out.println("newCollisions.size: " + newCollisions.size());
+        //System.out.println("newCollisions.size: " + newCollisions.size());
         for (int i = 0; i < newCollisions.size(); i++) {
-            for (int j = newCollisions.get(i).indexes.size()-1; j>=0; j--) {
+            for (int j = newCollisions.get(i).indexes.size() - 1; j >= 0; j--) {
                 int deadIndex = newCollisions.get(i).indexes.get(j);
                 //Entity dead = entities.remove(deadIndex);
                 deadIndexes.add(deadIndex);
                 System.out.println("'removed an entity'");
-                
+
             }
             //entities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
-            babyEntities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
+            babyEntities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y, newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
             System.out.println("'Added an entity'");
         }
-        
-         for (int i = 0; i < entitiesColliding.size(); i++) {
+
+        for (int i = 0; i < entitiesColliding.size(); i++) {
             System.out.print(entitiesColliding.get(i).get(0) + "| ");
             for (int j = 1; j < entitiesColliding.get(i).size(); j++) {
                 System.out.print(entitiesColliding.get(i).get(j) + ", ");
@@ -800,33 +834,30 @@ public class Boleyn {
             }
             System.out.println("");
         }
-        
-         deadIndexes = sort(deadIndexes);
-         //largest index is now last
-         System.out.println("deadIndexes" + deadIndexes.toString());
-         for (int i = 0; i < deadIndexes.size(); i++) {
-            entities.remove((int)deadIndexes.get(i));
-            
-        }
-         for (int i = 0; i < babyEntities.size(); i++) {
-            entities.add(babyEntities.get(i));
-            
-        }
-         
 
-	   
+        deadIndexes = sort(deadIndexes);
+        //largest index is now last
+        System.out.println("deadIndexes" + deadIndexes.toString());
+        for (int i = 0; i < deadIndexes.size(); i++) {
+            entities.remove((int) deadIndexes.get(i));
+
+        }
+        for (int i = 0; i < babyEntities.size(); i++) {
+            entities.add(babyEntities.get(i));
+
+        }
 
     }
-    
-    static ArrayList<Integer> sort(ArrayList<Integer> list){
+
+    static ArrayList<Integer> sort(ArrayList<Integer> list) {
         int temp = 0;
         for (int i = list.size(); i > 1; i--) {
             for (int j = list.size(); j > 1; j--) {
 
                 if (list.get(j - 1) > list.get(j - 2)) {
                     temp = list.get(j - 1);
-                    list.set(j - 1,list.get(j - 2));
-                   list.set(j - 2,temp);
+                    list.set(j - 1, list.get(j - 2));
+                    list.set(j - 2, temp);
 
                 }//if
             }//for
