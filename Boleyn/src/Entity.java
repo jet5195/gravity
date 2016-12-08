@@ -1,6 +1,5 @@
 public class Entity {
-
-
+    
     double x;
     double y;
 
@@ -28,6 +27,12 @@ public class Entity {
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        
+        this.nx = x;
+        this.ny = y;
+        this.nvx = vx;
+        this.nvy = vy;
+        
         this.setRadiusAndMass(r);
         double ratio = this.getMass()/(size*size);
         //System.out.println(ratio);

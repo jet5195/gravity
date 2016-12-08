@@ -10,6 +10,7 @@ public class Boleyn {
     static double timeStep = 1;
     static long graphicsDelay;
     static boolean fill;//false = no fill, true = fill
+    static ArrayList<Collision> collisions = new ArrayList();
 
     public static void main(String[] args) {
         KeyboardInputClass input = new KeyboardInputClass();
@@ -252,13 +253,13 @@ public class Boleyn {
     }
 
     static void show() {
-        System.out.printf("%12s%10s%10s%10s%10s%10s%10s%10s\n", "R", "Mass","X", "Y", "VX", "VY", "AX", "AY");
+        System.out.printf("%12s%10s%10s%10s%10s%10s%10s%10s\n", "R", "Mass", "X", "Y", "VX", "VY", "AX", "AY");
         //System.out.printf("%d.\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",i, a.x, a.y, a.vx, a.vy, a.ax, a.ay);
         for (int i = 0; i < entities.size(); i++) {
             Entity a = entities.get(i);
             //System.out.println(i+".\t"+a.x+"\t"+a.y+"\t"+a.vx+"\t"+a.vy+"\t"+a.ax+"\t"+a.ay);    
             System.out.printf("%d.%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f%10.2f\n",
-                    i, a.getRadius(), a.getMass(),a.x, a.y, a.vx, a.vy, a.ax, a.ay);
+                    i, a.getRadius(), a.getMass(), a.x, a.y, a.vx, a.vy, a.ax, a.ay);
         }
     }
     //****************************************************************************
@@ -281,12 +282,21 @@ public class Boleyn {
             computeNewVelocity(entities.get(i));
             computeNewPosition(entities.get(i));
         }
+        collisions = new ArrayList();
         for (int i = 0; i < entities.size(); i++) {
-            for (int j = i+1; j < entities.size(); j++) {
+            for (int j = i + 1; j < entities.size(); j++) {
                 computeCollisions(i, j);
             }
-            
+
         }
+//        for (int i = 0; i < newCollisions.size(); i++) {
+//            collide(newCollisions.get(i));
+//
+//        }
+        if (!collisions.isEmpty()) {
+            newCollide();
+        }
+
         for (int i = 0; i < entities.size(); i++) {
             setNewValuesAsOldValues(entities.get(i));
         }
@@ -314,7 +324,11 @@ public class Boleyn {
     }
 
     static double[] computeNewAcceleration(Entity eMove, Entity eStatic, int g) {//entity eMove being acted on by entity eStatic
-        double magnitude = g * eStatic.getMass() / distanceBetweenPoints(eMove, eStatic); //distance
+        double magnitude = 1;
+        double distance = distanceBetweenPoints(eMove.x, eMove.y, eStatic.x, eStatic.y);
+        if (distance != 0) {//didn't fix NaN
+            magnitude = g * eStatic.getMass() / distance; //distance
+        }
         //System.out.println("magnitude: " + magnitude);
         //double slope = (eStatic.y-eMove.y)/(eStatic.x-eMove.x);// probs useless
         Angles angleObject = new Angles();
@@ -329,12 +343,17 @@ public class Boleyn {
         //consideration in the x direction is ax = aax + abx + acx 
     }
 
-    static double distanceBetweenPoints(Entity entity1, Entity entity2) {
-        double xDistance = (entity2.x - entity1.x);
-        xDistance = xDistance * xDistance;
-        double yDistance = (entity2.y - entity1.y);
-        yDistance = yDistance * yDistance;
-        return Math.sqrt(xDistance + yDistance);
+    static double distanceBetweenPoints(double x1, double y1, double x2, double y2) {
+//        System.out.println("x1\ty1\tx2\ty2\t");
+//        System.out.println(x1 +  "\t" +y1 + "\t" +x2 + "\t" +y2);
+
+        double a = (x2 - x1);
+        //System.out.println("x distance is: " + a);
+        a = a * a;
+        double b = (y2 - y1);
+        //System.out.println("y distance is: " + b);
+        b = b * b;
+        return Math.sqrt(a + b);
 
     }
 
@@ -363,8 +382,8 @@ public class Boleyn {
         switch (preset) {
             case 1:
                 int p = size / 4;
-                entities.add(new Entity(p, p, 0, 0, p / 4, size));
                 entities.add(new Entity(-1 * p, p, 0, 0, p / 4, size));
+                entities.add(new Entity(p, p, 0, 0, p / 4, size));
                 entities.add(new Entity(p, -1 * p, 0, 0, p / 4, size));
                 entities.add(new Entity(-1 * p, -1 * p, 0, 0, p / 4, size));
                 break;
@@ -407,18 +426,22 @@ public class Boleyn {
     static void computeCollisions(int i, int j) {
         Entity entity1 = entities.get(i);
         Entity entity2 = entities.get(j);
-        double variance = 1;//amount of... for a slope to be the same
+        double variance = .005;//amount of... for a slope to be the same
         double slope1 = computeSlope(entity1);
         double slope2 = computeSlope(entity2);
-        if (Math.abs(slope1 - slope2) > variance) {
-            System.out.println("case1 ran!!!! weeeee");
-            case1(i, j, slope1, slope2);//trajectories intersect
-            
-        } else {
-            System.out.println("case2 ran!!! This is awkward");
-            case2(entity1, entity2, slope1, slope2);
-            
-        }
+
+        case3(i, j, slope1, slope2);
+//        if (Math.abs(slope1 - slope2) < variance) {
+//            System.out.println("/////////////////////////////////");
+//            System.out.println("case1");
+//            System.out.println("i:" + i + ", j: " + j);
+//            case1(i, j, slope1, slope2);//trajectories intersect
+//
+//        } else {
+//            System.out.println("case2");
+//            case2(i, j, slope1, slope2);
+//
+//        }
     }
 
     static void case1(int i, int j, double slope1, double slope2) {//different slopes
@@ -428,96 +451,203 @@ public class Boleyn {
         //(where r1 and r2 are the radii of the two bodies).
         Entity entity1 = entities.get(i);
         Entity entity2 = entities.get(j);
-        double radius = entity1.getRadius() + entity2.getRadius();
-        double area = pi * radius * radius;
+        //double radius = entity1.getRadius() + entity2.getRadius();
+        //double area = pi * radius * radius;
         double x = ((slope1 * entity1.x) - (slope2 * entity2.x) + entity2.y - entity1.y) / (slope1 - slope2);
+        if (x <= .000001 || x > .000001) {
+            x = 0;
+        }
+        System.out.println(i + " slope is: " + slope1);
+        System.out.println(j + " slope is: " + slope2);
         double y = slope1 * (x - entity1.x) + entity1.y;
+        if (y <= .000001 || y > .000001) {
+            y = 0;
+        }
+
+        // image.insertCircle(x, y, entity1.getRadius()+entity2.getRadius(),
+        //        255, 255, 255, true);
+        //image.setPixelValues();
+        System.out.println("The intersection of " + i + " & " + j);
+        System.out.println("x is: " + x);
+        System.out.println("y is: " + y);
         //pythag theorem
-        double a = y - entity1.y;
-        double b = x - entity1.x;
+        //double a = y - entity1.y;
+        //double b = x - entity1.x;
         //double d1 = Math.sqrt((a * a) + (b * b));
         double d1x = entity1.x - x;
         double d1y = entity1.y - y;
-        a = y - entity2.y;
-        b = x - entity2.x;
+        System.out.println("d1x is: " + d1x);
+        System.out.println("d1y is: " + d1y);
+        //a = y - entity2.y;
+        //b = x - entity2.x;
         //double d2 = Math.sqrt((a * a) + (b * b));
         double d2x = entity2.x - x;
         double d2y = entity2.y - y;
 
+        System.out.println("d2x is: " + d2x);
+        System.out.println("d2y is: " + d2y);
+
         //double d1in = d1 - entity2.getRadius();
-        double d1inX = d1x - entity2.getRadius();
-        double d1inY = d1y - entity2.getRadius();
-        
+        double d1inX = Math.abs(d1x) - entity2.getRadius();
+        double d1inY = Math.abs(d1y) - entity2.getRadius();
+        System.out.println("d1inX: " + d1inX);
+        System.out.println("d1inY: " + d1inY);
+
         //double d1out = d1 + entity2.getRadius();
-        double d1outX = d1x + entity2.getRadius();
-        double d1outY = d1y + entity2.getRadius();
-        
+        double d1outX = Math.abs(d1x) + entity2.getRadius();
+        double d1outY = Math.abs(d1y) + entity2.getRadius();
+        System.out.println("d1outX: " + d1outX);
+        System.out.println("d1outY: " + d1outY);
+
         //double d2in = d2 - entity1.getRadius();
-        double d2inX = d2x - entity1.getRadius();
-        double d2inY = d2y - entity1.getRadius();
-        
+        double d2inX = Math.abs(d2x) - entity1.getRadius();
+        double d2inY = Math.abs(d2y) - entity1.getRadius();
+        System.out.println("d2inX: " + d2inX);
+        System.out.println("d2inY: " + d2inY);
+
         //double d2out = d2 - entity1.getRadius();
-        double d2outX = d2x - entity1.getRadius();
-        double d2outY = d2y - entity1.getRadius();
+        double d2outX = Math.abs(d2x) + entity1.getRadius();
+        double d2outY = Math.abs(d2y) + entity1.getRadius();
+        System.out.println("d2outX: " + d2outX);
+        System.out.println("d2outY: " + d1outY);
 
         //dx = vxt + ½axt2 and dy = vyt + ½ayt2 
         //rewrite
         //½axt2 + vxt – dx = 0 and ½ayt2 + vyt – dy = 0 
-
         //do this for entity1 and entity2, maybe make this a method that passes in an entity
         double t1in = computeTime(entity1, d1inX, d1inY);
         double t1out = computeTime(entity1, d1outX, d1outY);
         double t2in = computeTime(entity2, d2inX, d2inY);
         double t2out = computeTime(entity2, d2outX, d2outY);
-        
-        //return true? if there is a collision maybe?
-        if((t1in>=t2in&&t1out<=t2out)||(t2in>=t1in&&t2out<=t1out)){
-            System.out.println("THERE IS A COLLISION OMG");
-            collide(i, j, x, y);
 
+        //return true? if there is a collision maybe?
+        if (((t1in >= t2in && t1out <= t2out) || (t2in >= t1in && t2out <= t1out)) && (t1in < timeStep && t2in < timeStep)) {
+            System.out.println("THERE IS A COLLISION OMG");
+            collisions.add(new Collision(i, j, x, y));
+            //collide(i, j, x, y);
         }
         double timeAtWhichCollisionOccurs;
-        if(t1in>t2in){
+        if (t1in > t2in) {
             timeAtWhichCollisionOccurs = t1in;
-            
-        } else{
+
+        } else {
             timeAtWhichCollisionOccurs = t2in;
         }
-        System.out.println(t2in);
+        System.out.println("t1in:" + t1in);
+        System.out.println("t1out:" + t1out);
+        System.out.println("t2in:" + t2in);
+        System.out.println("t2out:" + t2out);
 
         //one of these has to be true right? the inner 
     }
 
-    static void case2(Entity entity1, Entity entity2, double slope1, double slope2) {
+    static void case2(int i, int j, double slope1, double slope2) {
+        //do case 2.. if slope is less than epsilon
+        Entity entity1 = entities.get(i);
+        Entity entity2 = entities.get(j);
+        double sumOfRadii = entity1.getRadius() + entity2.getRadius();
+        //now compute the distance between
+        //compute distance between the two trajectories
+        //no idea what this means
 
+    }
+
+    static boolean case3(int i, int j, double slope1, double slope2) {
+        //double ts = .1;
+        Entity entity1 = entities.get(i);
+        Entity entity2 = entities.get(j);
+        double combinedRadii = entity1.getRadius() + entity2.getRadius();
+        double entity1x = entity1.x;
+        double entity1y = entity1.y;
+        double entity2x = entity2.x;
+        double entity2y = entity2.y;
+
+        //double a = entity1y - entity2y;
+        //double b = entity1x - entity2x;
+        //double distanceBetween = Math.sqrt(a * a + b * b);
+        double distanceBetween = distanceBetweenPoints(entity1x, entity1y, entity2x, entity2y);
+
+        double x = 0;
+        double y = 0;
+        //double x = (entity1x+entity2x)/2;
+        //double y = (entity1y+entity2y)/2;
+        //if there is already a collision
+        if (distanceBetween <= combinedRadii) {
+            //
+            System.out.println("There was a collision at ts: " + 0);
+            x = ((slope1 * entity1x) - (slope2 * entity2x) + entity2y - entity1y) / (slope1 - slope2);
+            if (x <= .000001 && x > -.000001) {
+                x = 0;
+            }
+            System.out.println(i + " slope is: " + slope1);
+            System.out.println(j + " slope is: " + slope2);
+            y = slope1 * (x - entity1.x) + entity1.y;
+            if (y <= .000001 && y > -.000001) {
+                y = 0;
+            }
+            System.out.println("The intersection of " + i + " & " + j);
+            System.out.println("x is: " + x);
+            System.out.println("y is: " + y);
+            //
+            //collide(i, j, x, y);
+
+            collisions.add(new Collision(i, j, x, y));
+            return true;
+        }
+        //if there isn't already a collision, loop through until you find one or get out of the timestep
+        for (double ts = .1; ts <= 1; ts += .1) {
+            entity1x = entity1.x + (entity1.vx * ts) + (.5 * entity1.nax * ts * ts);
+            entity1y = entity1.y + (entity1.vy * ts) + (.5 * entity1.nay * ts * ts);
+            entity2x = entity2.x + (entity2.vx * ts) + (.5 * entity2.nax * ts * ts);
+            entity2y = entity2.y + (entity2.vy * ts) + (.5 * entity2.nay * ts * ts);
+
+            //a = entity1y - entity2y;
+            //b = entity1x - entity2x;
+            //distanceBetween = Math.sqrt(a * a + b * b);
+            distanceBetween = distanceBetweenPoints(entity1x, entity1y, entity2x, entity2y);
+            if (distanceBetween <= combinedRadii) {
+                x = (entity1x + entity2x) / 2;
+                y = (entity1y + entity2y) / 2;
+                System.out.println("There was a collision at ts: " + ts);
+                System.out.println("Distance Between " + i + " & " + j + " : " + distanceBetween);
+                System.out.println("CombinedRadii:" + combinedRadii);
+                collisions.add(new Collision(i, j, x, y));
+                return true;
+            }
+        }
+        return false;
     }
 
     static double computeTime(Entity e, double x, double y) {
 
         double time = -1;
-        double dx = e.x - x;
-        double dy = e.y - y;
+        //double dx = e.x - x;
+        //double dy = e.y - y;
 
         if (e.nax != 0) {
-            time = quadraticFormula(.5 * e.nax, e.vx, -1 * dx);
+            time = quadraticFormula(.5 * e.nax, e.vx, -1 * x);
         } else if (e.vx != 0) {
-            time = dx / e.vx;
+            time = x / e.vx;
+        } else if (e.nay != 0) {
+            time = quadraticFormula(.5 * e.nay, e.vy, -1 * y);
+        } else if (e.vy != 0) {
+            time = y / e.vy;
         } else {
-            if (e.nay != 0) {
-                time = quadraticFormula(.5 * e.nay, e.vy, -1 * dy);
-            } else if (e.vy != 0) {
-                time = dy / e.vy;
-            } else {
-                System.out.println("NOTHING IS MOVING WHY TRY");
-            }
+            System.out.println("NOTHING IS MOVING WHY TRY");
         }
         return time;
     }
 
     static double quadraticFormula(double a, double b, double c) {
-        double result1 = ((-1 * b) + Math.sqrt((b * b) - (4 * a * c))) / (2 * a);
-        double result2 = ((-1 * b) - Math.sqrt((b * b) - (4 * a * c))) / (2 * a);
-
+        double result1 = 0;
+        double result2 = 0;
+        double sqrt = (b * b) - (4 * a * c);
+        //if(sqrt>=0){
+        result1 = ((-1 * b) + Math.sqrt(sqrt)) / (2 * a);
+        result2 = ((-1 * b) - Math.sqrt(sqrt)) / (2 * a);
+        //} else{
+        //wtf do I do
+        //}
         if (result1 >= 0 && result2 >= 0) {
             if (result1 < result2) {
                 return result1;
@@ -525,10 +655,14 @@ public class Boleyn {
                 return result2;
             }
         } else if (result1 > 0) {
+            //System.out.println(result1);
             return result1;
+
         } else if (result2 > 0) {
+            //System.out.println(result2);
             return result2;
         }
+        System.out.println("This sets a variable to NaN... meaning they should never touch?");
         return Double.NaN;//maybe return -1 if it's impossible instead of Double.NaN.. test
     }
 
@@ -536,27 +670,157 @@ public class Boleyn {
         return (entity1.ny - entity1.y) / (entity1.nx - entity1.x);
     }
 
-    static void collide(int i, int j, double x, double y) {
+    static void newCollide() {
+        ArrayList<ArrayList<Integer>> entitiesColliding = new ArrayList();//the 0th value will ALWAYS CONTAIN the i value
+        //find out if any entities collide with more than one other entity
+        System.out.println("Number of Collisions is: " + collisions.size());
+        int iValue = -1;
+        for (int i = 0; i < collisions.size(); i++) {
+            if (collisions.get(i).i != iValue) {
+                iValue = collisions.get(i).i;
+                entitiesColliding.add(new ArrayList<>());
+                entitiesColliding.get(entitiesColliding.size() - 1).add(iValue);
+            }
+            entitiesColliding.get(entitiesColliding.size() - 1).add(collisions.get(i).j);
+        }
+
+        //at this point, entitiesColliding 
+        for (int i = 0; i < entitiesColliding.size(); i++) {
+            System.out.print(entitiesColliding.get(i).get(0) + "| ");
+            for (int j = 1; j < entitiesColliding.get(i).size(); j++) {
+                System.out.print(entitiesColliding.get(i).get(j) + ", ");
+
+            }
+            System.out.println("");
+        }
+
+        iValue = entitiesColliding.get(0).get(0);//now this will be used to refer
+        //to each entity which collides
+        //ie 0|1,2,3
+        //it's 0
+        System.out.println("iValue b4 loop: " + iValue);
+        //ArrayList<Integer> iCollisions = entitiesColliding.get(0);
+       // iCollisions.remove(0);//this contains everyting iValue hits... without itself
+
+        for (int i = 0; i < entitiesColliding.size(); i++) {
+            if(entitiesColliding.get(0).get(0)!=0){
+                System.out.println("something weird happened. i is: " + i + "0Value is: " + entitiesColliding.get(0).get(0));
+            }
+            iValue = entitiesColliding.get(i).get(0);
+            //iCollisions = entitiesColliding.get(i);
+            for (int j = 0; j < entitiesColliding.get(i).size(); j++) {//for all newCollisions of i
+                for (int k = i + 1; k < entitiesColliding.size(); k++) {//check what they collide to
+                    int kValue = entitiesColliding.get(k).get(0);
+                    if (kValue == entitiesColliding.get(i).get(j)) {//if ivalue collides with 
+                        //if kValue (k|2, 3, 5) is in iCollisions (i| k, 5, 7)
+                        for (int l = entitiesColliding.get(k).size() - 1; l > 0; l--) {//start at 1 to disregard k itself
+                            int lValue = entitiesColliding.get(k).get(l);
+                            if (!entitiesColliding.get(i).contains(lValue)) {
+                                //iCollisions.add(lValue);
+                                entitiesColliding.get(i).add(lValue);
+                                System.out.println("Added " + iValue + "| " + lValue);
+                                entitiesColliding.get(k).remove(l);
+                                System.out.println("Removed " + kValue + "| " + lValue);
+                            } else{//already contained
+                                entitiesColliding.get(k).remove(l);
+                                System.out.println("Removed " + kValue + "| " + lValue);
+                            }
+                        }
+                        if(entitiesColliding.get(k).size()==1){
+                        entitiesColliding.remove(k);
+                        }
+                        //maybe have to delete entitesColliding.get(k) if it is empty????
+                    }
+                }
+                //go through each arrayList and see if 0 collides with 1 and 1 collides with 2
+                // then 0 collides with 1 & 2
+                //add all newCollisions from entitiesColliding.get(?).get(0)iCollisions.get(j)
+
+            }
+
+        }
+        for (int i = 0; i < entitiesColliding.size(); i++) {
+            System.out.print(entitiesColliding.get(i).get(0) + "| ");
+            for (int j = 1; j < entitiesColliding.get(i).size(); j++) {
+                System.out.print(entitiesColliding.get(i).get(j) + ", ");
+
+            }
+            System.out.println("");
+        }
+        ArrayList<NewCollisions> newCollisions = new ArrayList();
+        //TIME TO ACTUALLY MAKE THEM DO THINGS WHEN THEY COLLIDE
+        for (int i = 0; i < entitiesColliding.size(); i++) {
+            iValue = entitiesColliding.get(i).get(0);
+            double mass = 0;
+            double radius = 0;
+            double vx = 0;
+            double vy = 0;
+            for (int j = 0; j < entitiesColliding.get(i).size(); j++) {
+                int jValue = entitiesColliding.get(i).get(j);
+                Entity jEntity = entities.get(jValue);
+                mass+= jEntity.getMass();
+                vx+= jEntity.getMass() * jEntity.vx;
+                vy+= jEntity.getMass() * jEntity.vy;
+            }
+            newCollisions.add(new NewCollisions(entitiesColliding.get(i),0,0,vx,vy,mass));
+        }
+        
+        System.out.println("Index for newCollision[0]" + newCollisions.get(0).indexes.toString());
+        
+        /////////////////actually collide
+        System.out.println("newCollisions.size: " + newCollisions.size());
+        for (int i = 0; i < newCollisions.size(); i++) {
+            for (int j = newCollisions.get(i).indexes.size()-1; j>=0; j--) {
+                int deadIndex = newCollisions.get(i).indexes.get(j);
+                Entity dead = entities.remove(deadIndex);
+                System.out.println("removed an entity");
+                
+            }
+            entities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
+            System.out.println("Added an entity");
+        }
+        
+         for (int i = 0; i < entitiesColliding.size(); i++) {
+            System.out.print(entitiesColliding.get(i).get(0) + "| ");
+            for (int j = 1; j < entitiesColliding.get(i).size(); j++) {
+                System.out.print(entitiesColliding.get(i).get(j) + ", ");
+
+            }
+            System.out.println("");
+        }
+
+    }
+
+    static void collide(Collision c) {
+        int i = c.i;
+        int j = c.j;
+        double x = c.x;
+        double y = c.y;
         //m3= m1+m2
         //calculate r via m3
         //area=pir^2
         //r = sqrt(a/pi)
+        System.out.println("Entity " + i + " & " + j + "collide creating a new entity at position");
+        System.out.println("X: " + x);
+        System.out.println("Y: " + y);
         Entity entity1 = entities.get(i);
         Entity entity2 = entities.get(j);
-        
+
         entities.remove(j);
         entities.remove(i);
         //vx3=(m1*vx1+m2*vx2)/m3 & same for y
-        double mass = entity1.getMass()+entity2.getMass();
-        double radius = Math.sqrt(mass/pi);
-        double vx = (entity1.getMass()*entity1.vx)+(entity2.getMass()*entity2.vx)/mass;
-        double vy = (entity1.getMass()*entity1.vy)+(entity2.getMass()*entity2.vy)/mass;
+        double mass = entity1.getMass() + entity2.getMass();
+        System.out.println("mass is: " + mass);
+        double radius = Math.sqrt(mass / pi);
+        double vx = ((entity1.getMass() * entity1.vx) + (entity2.getMass() * entity2.vx)) / mass;
+        double vy = ((entity1.getMass() * entity1.vy) + (entity2.getMass() * entity2.vy)) / mass;
         Entity combined = new Entity(x, y, vx, vy, radius, size);
         entities.add(0, combined);
         System.out.println("added an entity. ");
     }
-
+//add smaller to 
     //****************************************************************************
+
     static void drawEntity(Entity entity) {
         image.insertCircle(entity.x, entity.y, entity.getRadius(), entity.color[0], entity.color[1], entity.color[2], fill);
     }
