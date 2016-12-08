@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Boleyn {
 
@@ -11,6 +12,7 @@ public class Boleyn {
     static long graphicsDelay;
     static boolean fill;//false = no fill, true = fill
     static ArrayList<Collision> collisions = new ArrayList();
+    
 
     public static void main(String[] args) {
         KeyboardInputClass input = new KeyboardInputClass();
@@ -217,8 +219,8 @@ public class Boleyn {
                         x = ((Math.random() * image.xRange) + image.xLeft);
                         y = ((Math.random() * image.yRange) + image.yBottom);
                         //System.out.println("X is: " + x + ", Y is: " + y);
-                        vx = (Math.random() * size) - (size / 2);
-                        vy = (Math.random() * size) - (size / 2);
+                        vx = ((Math.random() * size) - (size / 2))/10;
+                        vy = ((Math.random() * size) - (size / 2)/10);
                         r = (Math.random() * size) / 10;//max 
                         entities.add(new Entity(x, y, vx, vy, r, size));
                         numRandEntities--;
@@ -762,22 +764,32 @@ public class Boleyn {
                 vx+= jEntity.getMass() * jEntity.vx;
                 vy+= jEntity.getMass() * jEntity.vy;
             }
+            vx/=mass;
+            vy/=mass;
             newCollisions.add(new NewCollisions(entitiesColliding.get(i),0,0,vx,vy,mass));
         }
         
         System.out.println("Index for newCollision[0]" + newCollisions.get(0).indexes.toString());
+        
+        
+        
+        ArrayList<Integer> deadIndexes = new ArrayList<>();
+        ArrayList<Entity> babyEntities = new ArrayList<>();
+        
         
         /////////////////actually collide
         System.out.println("newCollisions.size: " + newCollisions.size());
         for (int i = 0; i < newCollisions.size(); i++) {
             for (int j = newCollisions.get(i).indexes.size()-1; j>=0; j--) {
                 int deadIndex = newCollisions.get(i).indexes.get(j);
-                Entity dead = entities.remove(deadIndex);
-                System.out.println("removed an entity");
+                //Entity dead = entities.remove(deadIndex);
+                deadIndexes.add(deadIndex);
+                System.out.println("'removed an entity'");
                 
             }
-            entities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
-            System.out.println("Added an entity");
+            //entities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
+            babyEntities.add(new Entity(newCollisions.get(i).x, newCollisions.get(i).y,newCollisions.get(i).vx, newCollisions.get(i).vy, newCollisions.get(i).radius, size));
+            System.out.println("'Added an entity'");
         }
         
          for (int i = 0; i < entitiesColliding.size(); i++) {
@@ -788,7 +800,38 @@ public class Boleyn {
             }
             System.out.println("");
         }
+        
+         deadIndexes = sort(deadIndexes);
+         //largest index is now last
+         System.out.println("deadIndexes" + deadIndexes.toString());
+         for (int i = 0; i < deadIndexes.size(); i++) {
+            entities.remove((int)deadIndexes.get(i));
+            
+        }
+         for (int i = 0; i < babyEntities.size(); i++) {
+            entities.add(babyEntities.get(i));
+            
+        }
+         
 
+	   
+
+    }
+    
+    static ArrayList<Integer> sort(ArrayList<Integer> list){
+        int temp = 0;
+        for (int i = list.size(); i > 1; i--) {
+            for (int j = list.size(); j > 1; j--) {
+
+                if (list.get(j - 1) > list.get(j - 2)) {
+                    temp = list.get(j - 1);
+                    list.set(j - 1,list.get(j - 2));
+                   list.set(j - 2,temp);
+
+                }//if
+            }//for
+        }//for
+        return list;
     }
 
     static void collide(Collision c) {
