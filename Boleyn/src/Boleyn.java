@@ -523,8 +523,8 @@ public class Boleyn {
 
         //return true? if there is a collision maybe?
         if (((t1in >= t2in && t1out <= t2out) || (t2in >= t1in && t2out <= t1out)) && (t1in < timeStep && t2in < timeStep)) {
-            System.out.println("THERE IS A COLLISION OMG");
-            collisions.add(new Collision(i, j, x, y));
+            //System.out.println("THERE IS A COLLISION OMG");
+            collisions.add(new Collision(i, j));
             //collide(i, j, x, y);
         }
         double timeAtWhichCollisionOccurs;
@@ -568,31 +568,24 @@ public class Boleyn {
         //double distanceBetween = Math.sqrt(a * a + b * b);
         double distanceBetween = distanceBetweenPoints(entity1x, entity1y, entity2x, entity2y);
 
-        double x = 0;
-        double y = 0;
+        //double x = 0;
+        //double y = 0;
         //double x = (entity1x+entity2x)/2;
         //double y = (entity1y+entity2y)/2;
         //if there is already a collision
         if (distanceBetween <= combinedRadii) {
             //
             System.out.println("There was a collision at ts: " + 0);
-            x = ((slope1 * entity1x) - (slope2 * entity2x) + entity2y - entity1y) / (slope1 - slope2);
-            if (x <= .000001 && x > -.000001) {
-                x = 0;
-            }
-            System.out.println(i + " slope is: " + slope1);
-            System.out.println(j + " slope is: " + slope2);
-            y = slope1 * (x - entity1.x) + entity1.y;
-            if (y <= .000001 && y > -.000001) {
-                y = 0;
-            }
-            System.out.println("The intersection of " + i + " & " + j);
-            System.out.println("x is: " + x);
-            System.out.println("y is: " + y);
+            //double coordinates[] = findIntersection(entity1, entity2, slope1, slope2);
+            //x= coordinates[1];
+            //y = coordinates[2];
+            //System.out.println("The intersection of " + i + " & " + j);
+            //System.out.println("x is: " + x);
+            //System.out.println("y is: " + y);
             //
             //collide(i, j, x, y);
 
-            collisions.add(new Collision(i, j, x, y));
+            collisions.add(new Collision(i, j));
             return true;
         }
         //if there isn't already a collision, loop through until you find one or get out of the timestep
@@ -612,12 +605,18 @@ public class Boleyn {
             //distanceBetween = Math.sqrt(a * a + b * b);
             distanceBetween = distanceBetweenPoints(entity1x, entity1y, entity2x, entity2y);
             if (distanceBetween <= combinedRadii) {
-                x = (entity1x + entity2x) / 2;
-                y = (entity1y + entity2y) / 2;
+                //double coordinates[] = findIntersection(entity1, entity2, slope1, slope2);//this SHOULD WORK
+                //                      problem may be due to looking at old positions.. but it should be on the
+                //                      the same line therefore it should work the same??
+                //x= coordinates[1];
+                //y = coordinates[2];
+                //System.out.println("The intersection of " + i + " & " + j);
+                //System.out.println("x is: " + x);
+                //System.out.println("y is: " + y);
                 System.out.println("There was a collision at ts: " + ts);
                 System.out.println("Distance Between " + i + " & " + j + " : " + distanceBetween);
                 System.out.println("CombinedRadii:" + combinedRadii);
-                collisions.add(new Collision(i, j, x, y));
+                collisions.add(new Collision(i, j));
                 return true;
             }
         }
@@ -775,7 +774,6 @@ public class Boleyn {
             System.out.print(entitiesColliding.get(i).get(0) + "| ");
             for (int j = 1; j < entitiesColliding.get(i).size(); j++) {
                 System.out.print(entitiesColliding.get(i).get(j) + ", ");
-
             }
             System.out.println("");
         }
@@ -794,13 +792,17 @@ public class Boleyn {
                 int jValue = entitiesColliding.get(i).get(j);
                 Entity jEntity = entities.get(jValue);
                 mass += jEntity.getMass();
+                //
+                //find intersection point between colliding entities?
+                //
                 vx += jEntity.getMass() * jEntity.vx;
                 vy += jEntity.getMass() * jEntity.vy;
-                x += jEntity.x;
-                y += jEntity.y;
+                x += jEntity.x*jEntity.getMass();
+                y += jEntity.y*jEntity.getMass();
+   
             }
-            x/=entitiesColliding.get(i).size();
-            y/=entitiesColliding.get(i).size();
+            x/=mass;
+            y/=mass;
             vx /= mass;
             vy /= mass;
             newCollisions.add(new NewCollisions(entitiesColliding.get(i), x, y, vx, vy, mass));
@@ -848,6 +850,29 @@ public class Boleyn {
         }
 
     }
+    
+    static double[] findIntersection(Entity entity1, Entity entity2, double slope1, double slope2){
+        double x = ((slope1 * entity1.x) - (slope2 * entity2.x) + entity2.y - entity1.y) / (slope1 - slope2);
+        if (x <= .000001 || x > .000001) {
+            x = 0;
+        }
+        System.out.println(1 + " slope is: " + slope1);
+        System.out.println(2 + " slope is: " + slope2);
+        double y = slope1 * (x - entity1.x) + entity1.y;
+        if (y <= .000001 || y > .000001) {
+            y = 0;
+        }
+
+        // image.insertCircle(x, y, entity1.getRadius()+entity2.getRadius(),
+        //        255, 255, 255, true);
+        //image.setPixelValues();
+        System.out.println("The intersection of " + 1 + " & " + 2);
+        System.out.println("x is: " + x);
+        System.out.println("y is: " + y);
+        
+        double[] returnMe = {x,y};
+        return returnMe;
+    }
 
     static ArrayList<Integer> sort(ArrayList<Integer> list) {
         int temp = 0;
@@ -868,15 +893,15 @@ public class Boleyn {
     static void collide(Collision c) {
         int i = c.i;
         int j = c.j;
-        double x = c.x;
-        double y = c.y;
+        //double x = c.x;
+        //double y = c.y;
         //m3= m1+m2
         //calculate r via m3
         //area=pir^2
         //r = sqrt(a/pi)
         System.out.println("Entity " + i + " & " + j + "collide creating a new entity at position");
-        System.out.println("X: " + x);
-        System.out.println("Y: " + y);
+        //System.out.println("X: " + x);
+        //System.out.println("Y: " + y);
         Entity entity1 = entities.get(i);
         Entity entity2 = entities.get(j);
 
@@ -888,7 +913,7 @@ public class Boleyn {
         double radius = Math.sqrt(mass / pi);
         double vx = ((entity1.getMass() * entity1.vx) + (entity2.getMass() * entity2.vx)) / mass;
         double vy = ((entity1.getMass() * entity1.vy) + (entity2.getMass() * entity2.vy)) / mass;
-        Entity combined = new Entity(x, y, vx, vy, radius, size);
+        Entity combined = new Entity(0, 0, vx, vy, radius, size);
         entities.add(0, combined);
         System.out.println("added an entity. ");
     }
