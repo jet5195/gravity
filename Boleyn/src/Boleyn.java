@@ -149,7 +149,9 @@ public class Boleyn {
                         break;
                     //time step
                     case "T":
-                        tsc = input.getCharacter(true, 'H', "H, D", 1, "Enter 'H' to half the timestep, 'D' to double. Default is: '" + tsc + "', current timestep is: " + timeStep);
+                        tsc = input.getCharacter(true, 'H', "H, D", 1, 
+                                "Enter 'H' to half the timestep, 'D' to double. Default is: "
+                                        + "'" + tsc + "', current timestep is: " + timeStep);
                         if (tsc == 'D') {
                             timeStep *= 2;
                         } else if (tsc == 'H') {
@@ -214,13 +216,14 @@ public class Boleyn {
                         break;
                     }
                 case 1:
-                    int numRandEntities = input.getInteger(true, 1, 0, 1000000, "How many random entities? (Default is 1):");
+                    int numRandEntities = input.getInteger(true, 1, 0, 1000000,
+                            "How many random entities? (Default is 1):");
                     while (numRandEntities > 0) {
                         x = ((Math.random() * image.xRange) + image.xLeft);
                         y = ((Math.random() * image.yRange) + image.yBottom);
                         vx = ((Math.random() * size) - (size / 2)) / 100;
-                        vy = ((Math.random() * size) - (size / 2) / 100);
-                        r = (Math.random() * size) / 5;//max  is
+                        vy = ((Math.random() * size) - (size / 2)) / 100;
+                        r = (Math.random() * size) / 10;
                         entities.add(new Entity(x, y, vx, vy, r, size));
                         numRandEntities--;
                     }
@@ -229,11 +232,16 @@ public class Boleyn {
                     presets(input);
                     break;
                 case 3:
-                    x = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, "Enter an x coordinate (Default is 0):");
-                    y = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, "Enter a y coordinate (Default is 0):");
-                    vx = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, "Enter velocity on the x axis (Default is 0):");
-                    vy = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, "Enter velocity on the y axis (Default is 0):");
-                    r = input.getDouble(true, 25, 1, Double.POSITIVE_INFINITY, "Enter the radius (Default is 25):");
+                    x = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 
+                            "Enter an x coordinate (Default is 0):");
+                    y = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 
+                            "Enter a y coordinate (Default is 0):");
+                    vx = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 
+                            "Enter velocity on the x axis (Default is 0):");
+                    vy = input.getDouble(true, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 
+                            "Enter velocity on the y axis (Default is 0):");
+                    r = input.getDouble(true, 25, 1, Double.POSITIVE_INFINITY, "Enter the radius"
+                            + " (Default is 25):");
                     entities.add(new Entity(x, y, vx, vy, r, size));
                     break;
                 case 4:
@@ -243,7 +251,8 @@ public class Boleyn {
                 case 5:
                     fill = !fill;
                 case 6:
-                    g = input.getDouble(true, g, 0.00001, Double.POSITIVE_INFINITY, "Entier the gravity constant, Default is: " + g);
+                    g = input.getDouble(true, g, 0.00001, Double.POSITIVE_INFINITY,
+                            "Entier the gravity constant, Default is: " + g);
                     
             }
             updateImage(0);
@@ -344,7 +353,8 @@ public class Boleyn {
     //              the second being hte ay component
     //Calls:        Angle.computeVectorAngle, distanceBetweenPoints
 
-    static double[] computeNewAcceleration(Entity eMove, Entity eStatic) {//entity eMove being acted on by entity eStatic
+    static double[] computeNewAcceleration(Entity eMove, Entity eStatic) {
+                                            //entity eMove being acted on by entity eStatic
         
         double magnitude = 1;
         double distance = distanceBetweenPoints(eMove.x, eMove.y, eStatic.x, eStatic.y);
@@ -691,7 +701,8 @@ public class Boleyn {
     //Calls:        image.insertCircle
 
     static void drawEntity(Entity entity) {
-        image.insertCircle(entity.x, entity.y, entity.getRadius(), entity.color[0], entity.color[1], entity.color[2], fill);
+        image.insertCircle(entity.x, entity.y, entity.getRadius(), entity.color[0], 
+                entity.color[1], entity.color[2], fill);
     }
 }
 //****************************************************************************
