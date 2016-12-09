@@ -22,17 +22,17 @@ public class Entity {
     private static int[][] colors = {{255,255,255},{0,255,255},{30,144,255},{0,0,255},
             {138,43,226},{192,192,192},{0,255,0},{244,164,96},{255,0,0},{255,255,0}};
     
-    Entity(double x, double y,double vx, double vy, double r, int size){
+    Entity(double x, double y,double vx, double vy, double r,int size){
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
-        
+     
         this.nx = x;
         this.ny = y;
         this.nvx = vx;
         this.nvy = vy;
-        
+     
         this.setRadiusAndMass(r);
         double ratio = this.getMass()/(size*size);
         //System.out.println(ratio);
@@ -69,6 +69,7 @@ public class Entity {
         //this.setMass(mass);
         
     }
+    
 
     //****************************************************************************
     double getRadius(){

@@ -1,8 +1,6 @@
-
-
 import java.util.ArrayList;
 
-public class NewCollisions {
+public class BigCollisions {
     ArrayList<Integer> indexes;
     double mass;
     double vx;
@@ -12,7 +10,7 @@ public class NewCollisions {
     double radius;
     final double pi = 3.14159265358979323846;
     
-    public NewCollisions(ArrayList<Integer> indexes, double x, double y, double vx, double vy, double mass){
+    public BigCollisions(ArrayList<Integer> indexes, double x, double y, double vx, double vy,double mass){
         this.indexes=indexes;
         this.x=x;
         this.y=y;
@@ -20,5 +18,9 @@ public class NewCollisions {
         this.vy=vy;
         this.mass=mass;
         this.radius = Math.sqrt(mass / pi);
+    }
+    
+    private void initialMove(){
+        
     }
 }
