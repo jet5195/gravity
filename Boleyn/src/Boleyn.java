@@ -21,7 +21,7 @@ public class Boleyn {
     static long graphicsDelay;                      //the graphics delay
     static boolean fill;                            //false = no fill, true = fill
     static ArrayList<Collision> collisions = new ArrayList();//array containing the collisions
-    static double g = 1;                            //gravity
+    static double g;                         //gravity
 
     //**************************************************************************
     //Method:       main
@@ -34,6 +34,7 @@ public class Boleyn {
         KeyboardInputClass input = new KeyboardInputClass();
         size = 800;               
         while (true) {
+            g = 1;
             graphicsDelay = 0;            //set this to 0 on start
             fill = false;                 //fill is false on start
             entities = new ArrayList<>(); //creates the array of entities
@@ -201,11 +202,13 @@ public class Boleyn {
             System.out.println("Press 3 to specify your own coordinates");
             System.out.println("Press 4 to specify the time delay");
             System.out.println("Press 5 to fill entities (or not fill if they are being filled)");
-            menu = input.getInteger(true, menu, 0, 5, "Default is: " + menu);
+            System.out.println("Press 6 to change the gravity constant");
+            menu = input.getInteger(true, menu, 0, 6, "Default is: " + menu);
             switch (menu) {
                 case 0:
                     if (entities.isEmpty()) {
                         System.out.println("Error, there must be at least 1 entity, try again.");
+                        break;
                     } else {
                         exit = 1;
                         break;
@@ -239,6 +242,9 @@ public class Boleyn {
                     break;
                 case 5:
                     fill = !fill;
+                case 6:
+                    g = input.getDouble(true, g, 0.00001, Double.POSITIVE_INFINITY, "Entier the gravity constant, Default is: " + g);
+                    
             }
             updateImage(0);
         }
@@ -403,13 +409,20 @@ public class Boleyn {
 
     static void presets(KeyboardInputClass input) {
         System.out.println("Presets: Default is 1");
+        System.out.println("0. To Exit");
         System.out.println("1. Quadrants");
         System.out.println("2. Overtake");
         System.out.println("3. Extremely fast X collision");
         System.out.println("4. Solar Systems");
-        int preset = input.getInteger(true, 1, 1, 4, "");
+        System.out.println("5. Diamonds");
+        System.out.println("6. Slingshot (After 1000s of iterations)");
+        System.out.println("7. Orbit");
+        
+        int preset = input.getInteger(true, 1, 0, 7, "");
         int p = 0;
         switch (preset) {
+            case 0:
+                break;
             case 1:
                 p = size / 4;
                 entities.add(new Entity(-1 * p, p, 0, 0, p / 4, size));
@@ -421,21 +434,46 @@ public class Boleyn {
                 p = size/4;
                 entities.add(new Entity(-p, 0, 180, 0, p/8, size));
                 entities.add(new Entity(0, 0, 50, 0, p/10, size));
+                break;
             //entities.add(new Entity(x, y, vx, vy, r))
             case 3:
                 entities.add(new Entity(-400,0 ,2000, 0, 10, size));
                 entities.add(new Entity(365,0 ,-2000, 0, 10, size));
+                break;
             case 4:
-                entities.add(new Entity(0, 0, 0, 0, 150, size));//sun
-                entities.add(new Entity(200, 0, 0, 20, 1.44, size));//mercury
-                entities.add(new Entity(300, 0, 0, 15, 3.052, size));//venus
-                entities.add(new Entity(500, 0, 0, 12, 3.371, size));//earth
-                entities.add(new Entity(750, 0, 0, 9, 1.89, size));//mars
-                entities.add(new Entity(900, 0, 0, 6.5, 11.441, size));//jupiter
-                entities.add(new Entity(1100, 0, 0, 5, 9.184, size));//saturn
-                entities.add(new Entity(1200, 0, 0, 2.5, 6.362, size));//uranus
-                entities.add(new Entity(1400, 0, 0, 1, 6.622, size));//neptune
-                entities.add(new Entity(1700, 0, 0, .5, .5, size));//pluto
+                entities.add(new Entity(0, 0,       0,      0,       150, size));//sun
+                entities.add(new Entity(200, 0,     0,      20,     1.44, size));//mercury
+                entities.add(new Entity(300, 100, -.25,     17,     3.052, size));//venus
+                entities.add(new Entity(500, 200, -.5,      12,      3.371, size));//earth
+                entities.add(new Entity(750, 300, -2.5,     10,     1.89, size));//mars
+                entities.add(new Entity(900, 400, -2,       9,        11.441, size));//jupiter
+                entities.add(new Entity(1000, 550, -1.5,    7.5,      9.184, size));//saturn
+                entities.add(new Entity(1150, 700, -1.5,    7,      6.362, size));//uranus
+                entities.add(new Entity(1300, 825, -1.5,    5,       6.622, size));//neptune
+                entities.add(new Entity(1450, 900, -.5,      4,     .5, size));//pluto
+                break;
+            case 5:
+                entities.add(new Entity(50, 0, 3, 0, 20, size));
+                entities.add(new Entity(-50, 0, -3, 0, 20, size));
+                entities.add(new Entity(0, 50, 0, 3, 20, size));
+                entities.add(new Entity(0, -50, 0, -3, 20, size));
+                entities.add(new Entity(-25, -25, -9, -9, 5, size));
+                entities.add(new Entity(-25, 25, -9, 9, 5, size));
+                entities.add(new Entity(25, 25, 9, 9, 5, size));
+                entities.add(new Entity(25, -25, 9, -9, 5, size));
+                break;
+            case 6:
+                entities.add(new Entity(-250,-50, 0, 18, 40, size));
+                entities.add(new Entity(250,50, 0, -18, 40, size));
+                entities.add(new Entity(0,0, 0, 0, 150, size));
+                break;
+            case 7:
+                entities.add(new Entity(-300,-50, 0, 10, 10, size));
+                entities.add(new Entity(300,50, 0, -10, 10, size));
+                entities.add(new Entity(50,-300, -10, 0, 10, size));
+                entities.add(new Entity(-50, 300, 10,0 , 10, size));                
+                entities.add(new Entity(0,0, 0, 0, 100, size));
+                break;
         }
     }
     //**************************************************************************
@@ -607,12 +645,9 @@ public class Boleyn {
                                 int mValue = collidingIndexes.get(k).get(m);
                                 if (!collidingIndexes.get(i).contains(mValue)) {
                                     collidingIndexes.get(i).add(mValue);
-                                    System.out.println("Added " + iValue + "| " + mValue);
                                     collidingIndexes.get(k).remove(m);
-                                    System.out.println("Removed " + kValue + "| " + mValue);
                                 } else {//already contained
                                     collidingIndexes.get(k).remove(m);
-                                    System.out.println("Removed " + kValue + "| " + mValue);
                                 }
                             }
                         }
